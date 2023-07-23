@@ -1,86 +1,91 @@
-import React, { Component } from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
 import css from './App.module.css';
 import { Searchbar } from './Searchbar/Searchbar';
 import { Loader } from './Loader/Loader';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
-export class App extends Component {
-  state = {
-    images: [],
-    inputSearch: '',
-    isModalOpen: false,
-    page: 1,
-    isMorePages: false,
-    perPage: 12,
-    isLoader: false,
-  };
-  totalHits = 0;
 
-  async componentDidMount() {
-    this.fetchImages();
-  }
-  async componentDidUpdate(prevProps, prevState) {
-    if (prevState.page !== this.state.page) {
-      const data = await this.fetchImages();
-      this.setState(prevState => ({
-        ...prevState,
-        images: [...prevState.images, ...data.hits],
-      }));
-    }
-  }
+export const App = () => {
+  const [images, setImages] = useState([]);
+  const [inputSearch, setInputSearch] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [isMorePages, setIsMorePages] = useState(false);
+  const [isLoader, setIsLoader] = useState(false);
+  let perPage = 12;
+  let totalHits = 0;
 
-  // Poprawiony setState z callbackiem
+  useEffect(() => {
+    console.log('useEffect-ComponentDidMount');
+    fetchImages();
+  }, []);
 
-  fetchImages = async () => {
+  // useEffect(() => {
+  //   fetchImages(inputSearch);
+  // }, [inputSearch]);
+
+  // useEffect(() => {
+  //   if (prevState !== page) {
+  //     fetchImages();
+  //   }
+  // }, [page]);
+
+  const fetchImages = async () => {
     try {
-      const { inputSearch, page } = this.state;
-      this.setState({ isLoader: true });
+      // setInputSearch(inputSearch);
+      // setPage(page);
+      // const { inputSearch, page } = this.state;
+      //this.setState({ isLoader: true });
+      setIsLoader(true);
       const response = await fetch(
         `https://pixabay.com/api/?q=${inputSearch}&page=${page}&key=36681363-b7657bef76d16cbfae88b6c43&image_type=photo&orientation=horizontal&per_page=12`
       );
       const data = await response.json();
-      this.totalHits = data.totalHits;
-      this.setState({ isLoader: false });
+      totalHits = data.totalHits;
+      //this.setState({ isLoader: false });
+      setIsLoader(false);
       return data;
     } catch (error) {
       console.log('Error', error);
-      this.setState({ isLoader: false });
+      setIsLoader(false);
+      // this.setState({ isLoader: false });
     }
   };
 
-  handleSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault();
-    this.inputSearch = e.target.elements.inputSearch.value;
-    this.setState(
+    setInputSearch(e.target.elements.inputSearch.value);
+    setInputSearch(
       prevState => {
         return {
           ...prevState,
-          inputSearch: this.inputSearch,
+          inputSearch: inputSearch,
         };
       },
       async () => {
         try {
-          const response = await this.fetchImages();
+          const response = await fetchImages();
           if (response.code !== 'ERR_NETWORK') {
             console.log(response);
-            this.setState(prevState => ({
+            setImages(prevState => ({
               ...prevState,
               images: response.hits,
             }));
-            if (this.totalHits === 0) {
+            if (totalHits === 0) {
               alert('No images were found matching your listing, sorry.');
             }
-            if (this.totalHits > this.state.perPage) {
-              this.setState(prevState => {
-                return { isMorePages: true };
-              });
-              // setIsPages(true);
+            if (totalHits > perPage) {
+              // this.setState(prevState => {
+              //   return { isMorePages: true };
+              // });
+              setIsMorePages(true);
             } else {
-              this.setState(prevState => {
-                return { isMorePages: false };
-              });
-              // setIsPages(false);
+              //this.setState(prevState => {
+              //  return { isMorePages: false };
+              //});
+              setIsMorePages(false);
             }
           } else {
             console.log(`${response.code}`);
@@ -96,58 +101,69 @@ export class App extends Component {
 
   // koniec poprawionego setState z callbackiem
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ ...prevState, page: prevState.page + 1 }));
+  const handleLoadMore = () => {
+    setPage(prevState => ({ ...prevState, page: prevState.page + 1 }));
     let totalPages = 0;
-    if (this.totalHits % this.state.perPage !== 0) {
-      totalPages = Math.trunc(this.totalHits / this.state.perPage) + 1;
-    } else if (this.totalHits % this.state.perPage === 0) {
-      totalPages = this.totalHits / this.state.perPage;
+    if (totalHits % perPage !== 0) {
+      totalPages = Math.trunc(totalHits / perPage) + 1;
+    } else if (totalHits % perPage === 0) {
+      totalPages = totalHits / perPage;
     }
-    if (totalPages === this.state.page) {
-      this.setState(prevState => {
-        return { isMorePages: false };
+    if (totalPages === page) {
+      setPage(prevState => {
+        setIsMorePages(false);
+
+        //  return { isMorePages: false };
       });
       // this.setIsPages(false);
     }
   };
 
-  toggleModal = e => {
-    this.setState(prevState => ({ isModalOpen: !prevState.isModalOpen }));
-    this.largeImageURL = e.target.dataset.large;
-    this.alt = e.target.dataset.alt;
-    window.addEventListener('keyup', this.handleModalOnKey);
+  const toggleModal = e => {
+    setIsModalOpen(prevState => ({ isModalOpen: !prevState.isModalOpen }));
+    images.largeImageURL = e.target.dataset.large;
+    images.alt = e.target.dataset.alt;
+    window.addEventListener('keyup', handleModalOnKey);
   };
-  handleModalOnKey = e => {
+  const handleModalOnKey = e => {
     if (e.key === 'Escape') {
-      this.setState(prevState => {
+      setIsModalOpen(prevState => {
         return {
           isModalOpen: false,
         };
       });
-      this.largeImageURL = '';
-      this.alt = '';
-      window.removeEventListener('keyup', this.handleModalOnKey);
+      images.largeImageURL = '';
+      images.alt = '';
+      window.removeEventListener('keyup', handleModalOnKey);
     }
   };
 
-  render() {
-    return (
-      <div className={css.app}>
-        {this.state.isLoader && <Loader />}
-        <Searchbar onSubmit={this.handleSubmit} />
-        <ImageGallery images={this.state.images} action={this.toggleModal} />
-        {this.state.isMorePages && (
-          <Button label="Load More" action={this.handleLoadMore} />
-        )}
-        <Modal
-          largeImageURL={this.largeImageURL}
-          alt={this.alt}
-          action={this.toggleModal}
-          actionKey={this.handleModalOnKey}
-          modal={this.state.isModalOpen}
-        />
-      </div>
-    );
-  }
-}
+  return (
+    <div className={css.app}>
+      {isLoader && <Loader />}
+      <Searchbar onSubmit={handleSubmit} />
+      <ImageGallery images={images} action={toggleModal} />
+      {isMorePages && <Button label="Load More" action={handleLoadMore} />}
+      <Modal
+        largeImageURL={images.largeImageURL}
+        alt={images.alt}
+        action={toggleModal}
+        actionKey={handleModalOnKey}
+        modal={isModalOpen}
+      />
+    </div>
+  );
+};
+
+// axios - jak zdążę
+// async function fetchImages() {
+//   try {
+//     const response = await axios.get('/user?ID=12345', {params:{
+//         inputSearch:{}
+//         page: 1
+//     }});
+//     console.log(response);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }
