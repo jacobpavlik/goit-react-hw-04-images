@@ -6,6 +6,9 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
 
+let largeImageURL = '';
+let alt = '';
+
 export const App = () => {
   const [images, setImages] = useState([]);
   const [inputSearch, setInputSearch] = useState('');
