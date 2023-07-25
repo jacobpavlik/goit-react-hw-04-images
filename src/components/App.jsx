@@ -62,26 +62,30 @@ export const App = () => {
   // -3- CLASS END
 
   // -3- HOOK START
-  // WERSJA 1 -NIE DZIAŁA
-  // useEffect(() => {
-  //   if (page !== 1) {
-  //     const data = fetchImages();
-  //     setImages(prevImages => [...prevImages, ...data.hits]);
-  //   }
-  // }, [page]);
-
-  // WERSJA 2
+  // WERSJA 1 - START
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchImages();
-      setImages(prevImages => [...prevImages, ...data.hits]);
-    };
     if (page !== 1) {
-      fetchData();
+      const data = fetchImages();
+      setImages(prevImages => [...prevImages, ...data.hits]);
     }
   }, [page]);
 
+  // WERSJA 1 - END
+
+  // WERSJA 2 - START
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const data = await fetchImages();
+  //     setImages(prevImages => [...prevImages, ...data.hits]);
+  //   };
+  //   if (page !== 1) {
+  //     fetchData();
+  //   }
+  // }, [page]);
+
+  // WERSJA 2 - END
   // -3- HOOK END
 
   // -4- CLASS START
