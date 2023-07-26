@@ -20,9 +20,24 @@ export const App = () => {
   const [isMorePages, setIsMorePages] = useState(false);
   const [isLoader, setIsLoader] = useState(false);
 
+  // useEffect(() => {
+  //   console.log('useEffect-ComponentDidMount');
+  //   fetchImages();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
   useEffect(() => {
-    console.log('useEffect-ComponentDidMount');
-    (async () => {
+    if (page !== 1) {
+      const data = async () => {
+        const data = await fetchImages();
+        setImages(prevImages => [...prevImages, ...data.hits]);
+      };
+      data();
+    }
+  }, [page]);
+
+  useEffect(() => {
+    const data = async () => {
       try {
         const response = await fetchImages();
         if (response.code !== 'ERR_NETWORK') {
@@ -42,46 +57,8 @@ export const App = () => {
       } catch (error) {
         console.log(`${error}`);
       }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (page !== 1) {
-      const data = async () => {
-        const data = await fetchImages();
-        setImages(prevImages => [...prevImages, ...data.hits]);
-      };
-      data();
-    }
-  }, [page]);
-
-  useEffect(() => {
-    console.log(inputSearch);
-    if (inputSearch !== '') {
-      const data = async () => {
-        try {
-          const response = await fetchImages();
-          if (response.code !== 'ERR_NETWORK') {
-            console.log(response);
-            setImages([...response.hits]);
-            if (totalHits === 0) {
-              alert('No images were found matching your listing, sorry.');
-            }
-            if (totalHits > perPage) {
-              setIsMorePages(true);
-            } else {
-              setIsMorePages(false);
-            }
-          } else {
-            console.log(`${response.code}`);
-          }
-        } catch (error) {
-          console.log(`${error}`);
-        }
-      };
-      data();
-    }
+    };
+    data();
   }, [inputSearch]);
 
   const fetchImages = async () => {
