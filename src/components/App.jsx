@@ -54,6 +54,7 @@ export const App = () => {
       };
       data();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   useEffect(() => {
@@ -82,6 +83,7 @@ export const App = () => {
       };
       data();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputSearch]);
 
   const fetchImages = async () => {
